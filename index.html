@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Asientos - Seats.io</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .info-banner {
+            background: #e0f2fe;
+            border-left: 4px solid #0284c7;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+        }
+
+        .info-banner h3 {
+            color: #0c4a6e;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .info-banner p {
+            color: #075985;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .info-banner code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #dc2626;
+        }
+
+        .config-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .config-section h3 {
+            color: #334155;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #475569;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .input-group small {
+            display: block;
+            color: #64748b;
+            margin-top: 5px;
+            font-size: 0.85em;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #chart {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            background: #f9fafb;
+        }
+
+        .status-panel {
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #10b981;
+            margin-top: 20px;
+        }
+
+        .status-panel.error {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+
+        .status-panel h3 {
+            color: #065f46;
+            margin-bottom: 10px;
+        }
+
+        .status-panel.error h3 {
+            color: #991b1b;
+        }
+
+        .status-panel p {
+            color: #047857;
+            line-height: 1.6;
+        }
+
+        .status-panel.error p {
+            color: #dc2626;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .legend-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid #cbd5e1;
+        }
+
+        .legend-dot.available {
+            background: #4ade80;
+        }
+
+        .legend-dot.occupied {
+            background: #ef4444;
+        }
+
+        .legend-dot.selected {
+            background: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+            }
+
+            #chart {
+                height: 400px;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0 !important;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+        }
+
+        .demo-notice {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .demo-notice strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .demo-notice p {
+            color: #78350f;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🪑 Consulta de Asientos</h1>
+        <p class="subtitle">Visualización de disponibilidad en tiempo real con Seats.io</p>
+
+
+        <div class="info-banner">
+            <h3>📋 Modo Solo Consulta</h3>
+            <p>
+                Este chart está configurado solo para <strong>visualización</strong>. 
+                Los usuarios pueden ver qué asientos están ocupados o disponibles, pero 
+                <strong>no pueden realizar reservas</strong>. La selección está deshabilitada.
+            </p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot available"></div>
+                <span>Disponible</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot occupied"></div>
+                <span>Ocupado</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot selected"></div>
+                <span>Seleccionado</span>
+            </div>
+        </div>
+
+        <div id="chart"></div>
+
+        <div id="statusPanel" style="display: none;"></div>
+    </div>
+
+    <!-- Seats.io CDN - Ajusta la región según tu cuenta -->
+    <script src="https://cdn-na.seatsio.net/chart.js"></script>
+
+    <script>
+        let chart = null;
+        let currentConfig = {
+            workspaceKey: 'e153e5da-e4c3-48b0-957e-136b01effc63',
+            eventKey: '0be99477-6f28-4ba1-bc68-bc61c8ae2284'
+        };
+
+        // Cargar el chart al iniciar la página
+        window.addEventListener('DOMContentLoaded', function() {
+            // Esperar a que seatsio esté disponible
+            if (typeof seatsio !== 'undefined') {
+                loadChart();
+            } else {
+                // Intentar cargar después de un pequeño delay
+                setTimeout(function() {
+                    if (typeof seatsio !== 'undefined') {
+                        loadChart();
+                    } else {
+                        showStatus('❌ Error: No se pudo cargar la librería de Seats.io. Verifica tu conexión a internet.', 'error');
+                    }
+                }, 1000);
+            }
+        });
+
+        function loadChart() {
+            currentConfig.workspaceKey = 'e153e5da-e4c3-48b0-957e-136b01effc63';
+            currentConfig.eventKey = '0be99477-6f28-4ba1-bc68-bc61c8ae2284';
+
+            // Limpiar el chart anterior si existe
+            if (chart) {
+                chart.destroy();
+            }
+
+            try {
+                // Crear el chart de Seats.io en modo solo consulta
+                chart = new seatsio.SeatingChart({
+                    divId: 'chart',
+                    workspaceKey: currentConfig.workspaceKey,
+                    event: currentConfig.eventKey,
+                    
+                    // Configuraciones para modo solo consulta
+                    mode: 'static', // Modo estático - solo visualización
+                    showSeatLabels: true, // Mostrar etiquetas de asientos
+                    showRowLabels: true, // Mostrar etiquetas de filas
+                    showMinimap: true, // Mostrar minimapa
+                    showActiveSectionTooltip: true,
+                    
+                    // Deshabilitar selección
+
+                    maxSelectedObjects: 0, // No permitir seleccionar asientos
+                    
+                    // Personalización de colores
+                    colorScheme: 'dark',
+                    
+                    // Información de precios (opcional)
+                    pricing: [
+                        {'category': 1, 'price': 30},
+                        {'category': 2, 'price': 40},
+                        {'category': 3, 'price': 50}
+                    ],
+                    
+                    priceFormatter: function(price) {
+                        return '$' + price;
+                    },
+                    
+                    // Callbacks para información
+                    onChartRendered: function(chart) {
+                        console.log('Chart renderizado correctamente');
+                        showStatus('✅ Chart cargado exitosamente. Mostrando disponibilidad en tiempo real.', 'success');
+                    },
+                    
+                    onChartRenderingFailed: function(chart) {
+                        console.error('Error al renderizar el chart');
+                        showStatus('❌ Error al cargar el chart. Verifica tus credenciales y que el evento exista.', 'error');
+                    },
+                    
+                    onObjectClicked: function(object) {
+                        // Mostrar información del asiento al hacer clic
+                        let statusText = '';
+                        if (object.status === 'free') {
+                            statusText = 'Disponible';
+                        } else if (object.status === 'booked') {
+                            statusText = 'Ocupado';
+                        } else if (object.status === 'reservedByToken') {
+                            statusText = 'Reservado temporalmente';
+                        } else {
+                            statusText = object.status;
+                        }
+                        
+                        const info = `
+                            Asiento: ${object.label}
+                            Estado: ${statusText}
+                            Categoría: ${object.category ? object.category.label : 'N/A'}
+                            ${object.pricing ? 'Precio: ' + object.pricing.formattedPrice : ''}
+                        `;
+                        
+                        alert(info);
+                    }
+                    
+                }).render();
+
+            } catch (error) {
+                console.error('Error al crear el chart:', error);
+                showStatus('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        function refreshChart() {
+            if (chart) {
+                chart.rerender();
+                showStatus('🔄 Chart actualizado', 'success');
+            } else {
+                showStatus('⚠️ Primero debes cargar un chart', 'error');
+            }
+        }
+
+        function showStatus(message, type = 'success') {
+            const panel = document.getElementById('statusPanel');
+            panel.className = 'status-panel ' + (type === 'error' ? 'error' : '');
+            panel.style.display = 'block';
+            
+            const title = type === 'error' ? 'Error' : 'Estado';
+            panel.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+            `;
+
+            // Auto-ocultar después de 5 segundos si es éxito
+            if (type === 'success') {
+                setTimeout(() => {
+                    panel.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
