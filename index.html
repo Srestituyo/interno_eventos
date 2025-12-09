@@ -1632,13 +1632,9 @@
                             const children = reservation.childrenOrNannies || '0';
 
                             let html = `
-                                <h4>✅ RESERVADO: ${object.label}</h4>
-                                <p><strong>ID de Reserva:</strong> ${reservation.bookingID}</p>
-                                <p><strong>Booker:</strong> ${reservation.bookerName}</p>
-                                <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
-                                <p><strong>Total PAX:</strong> ${totalPax}</p>
-                                <p><strong>Adultos:</strong> ${adults}</p>
-                                <p><strong>Niños/Nanies:</strong> ${children}</p>
+                                 ✅ ${reservation.bookingID} - ${reservation.bookerName} - PAX ${totalPax}
+                                -Adultos: ${adults}
+                                - Niños/Nanies: ${children}
                             `;
                             
                             // Verificar si esta reserva tiene duplicados
