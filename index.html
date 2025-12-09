@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consulta de Asientos - Seats.io</title>
+    <title>Consulta de Asientos - Seats.io (Con Reservas y Duplicados)</title>
     
+    <script src="https://cdn-na.seatsio.net/chart.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -71,98 +73,6 @@
             color: #dc2626;
         }
 
-        .config-section {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 2px solid #e2e8f0;
-        }
-
-        .config-section h3 {
-            color: #334155;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            color: #475569;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 0.95em;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .input-group small {
-            display: block;
-            color: #64748b;
-            margin-top: 5px;
-            font-size: 0.85em;
-        }
-
-        .btn {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            color: white;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-        }
-
-        .btn-primary:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            margin-left: 10px;
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
         #chart {
             width: 100%;
             height: 600px;
@@ -171,7 +81,7 @@
             margin-bottom: 25px;
             background: #f9fafb;
         }
-
+        
         .status-panel {
             background: #f0fdf4;
             padding: 20px;
@@ -185,242 +95,1612 @@
             border-left-color: #ef4444;
         }
 
-        .status-panel h3 {
-            color: #065f46;
-            margin-bottom: 10px;
+        /* --- Estilos para la tabla de duplicados --- */
+        #duplicate-report-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid #ffcc00;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.1);
+        }
+        
+        /* --- Estilos para la tabla de reservas detalladas --- */
+        #reservation-report-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        #validation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        #validation-table th, #validation-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+        
+        #validation-table th {
+            background-color: #eef2ff; /* Azul claro */
+            color: #312e81; /* Azul oscuro */
+            font-weight: 600;
         }
 
-        .status-panel.error h3 {
-            color: #991b1b;
-        }
 
-        .status-panel p {
-            color: #047857;
-            line-height: 1.6;
-        }
-
-        .status-panel.error p {
-            color: #dc2626;
-        }
-
-        .legend {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #475569;
-        }
-
-        .legend-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            border: 2px solid #cbd5e1;
-        }
-
-        .legend-dot.available {
-            background: #4ade80;
-        }
-
-        .legend-dot.occupied {
-            background: #ef4444;
-        }
-
-        .legend-dot.selected {
-            background: #3b82f6;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 1.6em;
-            }
-
-            #chart {
-                height: 400px;
-            }
-
-            .btn {
-                width: 100%;
-                margin: 5px 0 !important;
-            }
-
-            .controls {
-                flex-direction: column;
-            }
-        }
-
-        .demo-notice {
-            background: #fef3c7;
-            border: 2px solid #fbbf24;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        #duplicate-report-section h2 {
+            color: #d97706; /* Naranja oscuro */
+            margin-bottom: 15px;
+            font-size: 1.5em;
             text-align: center;
         }
 
-        .demo-notice strong {
-            color: #92400e;
-            display: block;
-            margin-bottom: 5px;
+        #duplicate-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
         }
 
-        .demo-notice p {
-            color: #78350f;
-            font-size: 0.9em;
+        #duplicate-table th, #duplicate-table td {
+            border: 1px solid #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        #duplicate-table th {
+            background-color: #fef3c7; /* Amarillo claro */
+            color: #92400e; /* Marrón */
+            font-weight: 600;
+        }
+
+        #duplicate-table tr:nth-child(even) {
+            background-color: #fffbeb;
+        }
+        
+        #duplicate-table .duplicate-seat {
+            font-weight: bold;
+            color: #dc2626; /* Rojo */
+        }
+        
+        /* Estilo para el tooltip de seats.io (personalizado) */
+        .seatsio-tooltip .seatsio-tooltip-content {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .seatsio-tooltip h4 {
+            color: #059669;
+            margin-bottom: 5px;
+        }
+        .seatsio-tooltip .duplicate-alert {
+            color: #dc2626;
+            font-weight: bold;
+            margin-top: 5px;
+            border-top: 1px solid #fca5a5;
+            padding-top: 5px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🪑 Consulta de Asientos</h1>
-        <p class="subtitle">Visualización de disponibilidad en tiempo real con Seats.io</p>
-
+        <h1>🪑 Consulta de Asientos y Validación de Reservas</h1>
+        <p class="subtitle">Visualización de disponibilidad e información de booker cargada desde JSON.</p>
 
         <div class="info-banner">
-            <h3>📋 Modo Solo Consulta</h3>
+            <h3>📋 Modo Solo Consulta y Carga de Datos</h3>
             <p>
-                Este chart está configurado solo para <strong>visualización</strong>. 
-                Los usuarios pueden ver qué asientos están ocupados o disponibles, pero 
-                <strong>no pueden realizar reservas</strong>. La selección está deshabilitada.
+                Este mapa utiliza la configuración `integrator: 'view-only'` para deshabilitar la reserva.
+                La disponibilidad y el nombre del booker son cargados de un **objeto JSON** simulando una base de datos o archivo Excel procesado.
             </p>
         </div>
 
         <div id="chart"></div>
 
         <div id="statusPanel" style="display: none;"></div>
+        
+        <section id="reservation-report-section" style="margin-top: 30px; display: none;">
+            <h2>📋 Listado Detallado de Reservas</h2>
+            <table id="validation-table" style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                    <tr style="background-color: #eef2ff;">
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">ID Reserva</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Booker</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Mesa</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Total PAX</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Adultos</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Niños/Nanies</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Asientos Asignados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+        <div id="duplicate-report-section" style="display: none;">
+            <h2>⚠️ Reservas con Asientos Duplicados Detectados</h2>
+            <p>Las siguientes reservaciones contienen al menos un asiento que fue asignado a otra reserva en el archivo de datos.</p>
+            <table id="duplicate-table">
+                <thead>
+                    <tr>
+                        <th>ID de Reserva</th>
+                        <th>Booker</th>
+                        <th>Asiento(s) en Conflicto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
     </div>
-
-    <!-- Seats.io CDN - Ajusta la región según tu cuenta -->
-    <script src="https://cdn-na.seatsio.net/chart.js"></script>
 
     <script>
         let chart = null;
-        let currentConfig = {
-            workspaceKey: 'e153e5da-e4c3-48b0-957e-136b01effc63',
-            eventKey: '0be99477-6f28-4ba1-bc68-bc61c8ae2284'
+        
+        // =========================================================
+        //  ⚠️ CONFIGURACIÓN DE SEATS.IO (REEMPLAZAR)
+        // =========================================================
+        const SEATS_IO_CONFIG = {
+            workspaceKey: 'e153e5da-e4c3-48b0-957e-136b01effc63', // REEMPLAZA
+            eventKey: '0be99477-6f28-4ba1-bc68-bc61c8ae2284'          // REEMPLAZA
         };
+        
+        // =========================================================
+        //  JSON DE RESERVAS (ACTUALIZADO CON DESGLOSE DE PAX)
+        //  *** ¡IMPORTANTE! Se agregaron los campos totalParticipants, adults, childrenOrNannies ***
+        //  Se mantiene la lógica de duplicado en 9-7 y 9-8.
+        // =========================================================
+        const RESERVATION_DATA = [
+  {
+    "bookingID": "1566511079829648",
+    "bookerName": "DJURA MIJATOVIC -",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "49-5",
+      "49-2",
+      "49-3",
+      "49-1",
+      "49-4",
+      "49-12",
+      "49-11",
+      "49-10",
+      "49-6",
+      "49-8",
+      "49-7",
+      "49-9"
+    ]
+  },
+  {
+    "bookingID": "1566511072863721",
+    "bookerName": "PABLO EVARISTO CABRERA CARPIO Este BP Es -",
+    "totalParticipants": 2,
+    "adults": 2,
+    "childrenOrNannies": 0,
+    "Neto total": "750.00",
+    "ITBIS": "135.00",
+    "SERVICE CHARGE": "75.00",
+    "Bruto total": "960.00",
+    "Total pagado": "960.00",
+    "seats": [
+      "50-2",
+      "50-1"
+    ]
+  },
+  {
+    "bookingID": "1566511121080944",
+    "bookerName": "Joseph Brown",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "55-2",
+      "55-3",
+      "55-4",
+      "55-5",
+      "55-6",
+      "55-7",
+      "55-8",
+      "55-9",
+      "55-10"
+    ]
+  },
+  {
+    "bookingID": "1566511124556305",
+    "bookerName": "Joseph Brown",
+    "totalParticipants": 5,
+    "adults": 5,
+    "childrenOrNannies": 0,
+    "Neto total": "1,875.00",
+    "ITBIS": "337.50",
+    "SERVICE CHARGE": "187.50",
+    "Bruto total": "2,400.00",
+    "Total pagado": "2,400.00",
+    "seats": [
+      "50-8",
+      "50-9",
+      "50-10",
+      "50-11",
+      "50-12"
+    ]
+  },
+  {
+    "bookingID": "1566511122311364",
+    "bookerName": "Barbara LeBon",
+    "totalParticipants": 18,
+    "adults": 10,
+    "childrenOrNannies": 8,
+    "Neto total": "4,950.00",
+    "ITBIS": "891.00",
+    "SERVICE CHARGE": "495.00",
+    "Bruto total": "6,336.00",
+    "Total pagado": "6,816.00",
+    "seats": [
+      "47-1",
+      "47-2",
+      "47-3",
+      "47-4",
+      "47-5",
+      "47-6",
+      "47-7",
+      "47-8",
+      "47-9",
+      "47-10",
+      "47-11",
+      "47-12",
+      "56-1",
+      "56-2",
+      "56-3",
+      "56-4",
+      "56-5",
+      "56-6",
+      "56-7"
+    ]
+  },
+  {
+    "bookingID": "1566511123244851",
+    "bookerName": "Sussan Wahba",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "0.00",
+    "SERVICE CHARGE": "0.00",
+    "Bruto total": "4,500.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "48-1",
+      "48-2",
+      "48-3",
+      "48-4",
+      "48-5",
+      "48-6",
+      "48-7",
+      "48-8",
+      "48-9",
+      "48-10",
+      "48-11",
+      "48-12"
+    ]
+  },
+  {
+    "bookingID": "1566511144075781",
+    "bookerName": "MARIA L CARTER -",
+    "totalParticipants": 10,
+    "adults": 10,
+    "childrenOrNannies": 0,
+    "Neto total": "3,750.00",
+    "ITBIS": "675.00",
+    "SERVICE CHARGE": "375.00",
+    "Bruto total": "4,800.00",
+    "Total pagado": "4,800.00",
+    "seats": [
+      "34-7",
+      "34-8",
+      "34-9",
+      "34-10",
+      "34-1",
+      "34-2",
+      "34-3",
+      "34-4",
+      "34-5",
+      "34-6"
+    ]
+  },
+  {
+    "bookingID": "1566511142688595",
+    "bookerName": "NICOLE SCHWARZ MATHISON -",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "32-6",
+      "32-7",
+      "32-8",
+      "32-9",
+      "32-10",
+      "32-11",
+      "32-12",
+      "32-1",
+      "32-2",
+      "32-3",
+      "32-4",
+      "32-5"
+    ]
+  },
+  {
+    "bookingID": "1566511143767131",
+    "bookerName": "AMERIQUIN MARIA DALMASI DULUC -",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "31-4",
+      "31-3",
+      "31-2",
+      "31-12",
+      "31-11",
+      "31-10",
+      "31-1",
+      "31-9",
+      "31-8",
+      "31-7",
+      "31-6",
+      "31-5"
+    ]
+  },
+  {
+    "bookingID": "1566511148903772",
+    "bookerName": "MARIA L CARTER -",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "40-1",
+      "40-10",
+      "40-9",
+      "40-8",
+      "40-7",
+      "40-2",
+      "40-3",
+      "40-4",
+      "40-5"
+    ]
+  },
+  {
+    "bookingID": "1566511208540592",
+    "bookerName": "HEIKE UHLMANN -",
+    "totalParticipants": 10,
+    "adults": 10,
+    "childrenOrNannies": 0,
+    "Neto total": "3,750.00",
+    "ITBIS": "675.00",
+    "SERVICE CHARGE": "375.00",
+    "Bruto total": "4,800.00",
+    "Total pagado": "4,800.00",
+    "seats": [
+      "13-10",
+      "13-9",
+      "13-8",
+      "13-7",
+      "13-6",
+      "13-5",
+      "13-4",
+      "13-3",
+      "13-2",
+      "13-1"
+    ]
+  },
+  {
+    "bookingID": "1566511206607150",
+    "bookerName": "Serge Coles",
+    "totalParticipants": 7,
+    "adults": 7,
+    "childrenOrNannies": 0,
+    "Neto total": "2,625.00",
+    "ITBIS": "472.50",
+    "SERVICE CHARGE": "262.50",
+    "Bruto total": "3,360.00",
+    "Total pagado": "3,360.00",
+    "seats": [
+      "53-4",
+      "53-5",
+      "53-6",
+      "53-7",
+      "53-8",
+      "53-9",
+      "53-10"
+    ]
+  },
+  {
+    "bookingID": "1566511205170253",
+    "bookerName": "Francisco Antonio Alba Lopez",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "38-1",
+      "38-2",
+      "38-3",
+      "38-4",
+      "38-5",
+      "38-6",
+      "38-7",
+      "38-8",
+      "38-9"
+    ]
+  },
+  {
+    "bookingID": "1566511205546541",
+    "bookerName": "Manuel Pietrantoni",
+    "totalParticipants": 10,
+    "adults": 10,
+    "childrenOrNannies": 0,
+    "Neto total": "3,750.00",
+    "ITBIS": "675.00",
+    "SERVICE CHARMGE": "375.00",
+    "Bruto total": "4,800.00",
+    "Total pagado": "4,800.00",
+    "seats": [
+      "37-1",
+      "37-2",
+      "37-3",
+      "37-4",
+      "37-5",
+      "37-6",
+      "37-7",
+      "37-8",
+      "37-9",
+      "37-10"
+    ]
+  },
+  {
+    "bookingID": "1566511206089318",
+    "bookerName": "Juan Manuel Martin De Oliva",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "52-1",
+      "52-2",
+      "52-3",
+      "52-4",
+      "52-5",
+      "52-6",
+      "52-7",
+      "52-8",
+      "52-9"
+    ]
+  },
+  {
+    "bookingID": "1566511212667678",
+    "bookerName": "ANTONIO NEIRA SANCHEZ -",
+    "totalParticipants": 6,
+    "adults": 4,
+    "childrenOrNannies": 2,
+    "Neto total": "1,800.00",
+    "ITBIS": "324.00",
+    "SERVICE CHARGE": "180.00",
+    "Bruto total": "2,304.00",
+    "Total pagado": "2,304.00",
+    "seats": [
+      "23-1",
+      "23-2",
+      "23-3",
+      "23-8",
+      "23-4",
+      "23-7"
+    ]
+  },
+  {
+    "bookingID": "1566511217075439",
+    "bookerName": "FRANCISCO XAVIER BARONA -",
+    "totalParticipants": 11,
+    "adults": 11,
+    "childrenOrNannies": 0,
+    "Neto total": "4,125.00",
+    "ITBIS": "742.50",
+    "SERVICE CHARGE": "412.50",
+    "Bruto total": "5,280.00",
+    "Total pagado": "5,280.00",
+    "seats": [
+      "25-8",
+      "25-9",
+      "25-12",
+      "25-2",
+      "25-3",
+      "25-4",
+      "25-10",
+      "25-5",
+      "25-11",
+      "25-6",
+      "25-7"
+    ]
+  },
+  {
+    "bookingID": "1566511259253761",
+    "bookerName": "Raymond Vastola",
+    "totalParticipants": 7,
+    "adults": 6,
+    "childrenOrNannies": 1,
+    "Neto total": "2,400.00",
+    "ITBIS": "432.00",
+    "SERVICE CHARGE": "240.00",
+    "Bruto total": "3,072.00",
+    "Total pagado": "3,072.00",
+    "seats": [
+      "54-1",
+      "54-2",
+      "54-3",
+      "54-4",
+      "54-5",
+      "54-6",
+      "54-7"
+    ]
+  },
+  {
+    "bookingID": "1566511267835417",
+    "bookerName": "Carolina Berroa",
+    "totalParticipants": 6,
+    "adults": 4,
+    "childrenOrNannies": 2,
+    "Neto total": "1,800.00",
+    "ITBIS": "324.00",
+    "SERVICE CHARGE": "180.00",
+    "Bruto total": "2,304.00",
+    "Total pagado": "2,304.00",
+    "seats": [
+      "57-5",
+      "57-6",
+      "57-7",
+      "57-8",
+      "57-9",
+      "57-10"
+    ]
+  },
+  {
+    "bookingID": "1566511289952599",
+    "bookerName": "BLUE DIAMOND CONSTRUCTION GROUP SRL -",
+    "totalParticipants": 10,
+    "adults": 10,
+    "childrenOrNannies": 0,
+    "Neto total": "3,750.00",
+    "ITBIS": "675.00",
+    "SERVICE CHARGE": "375.00",
+    "Bruto total": "4,800.00",
+    "Total pagado": "4,800.00",
+    "seats": [
+      "7-7",
+      "7-9",
+      "7-8",
+      "7-10",
+      "7-1",
+      "7-2",
+      "7-3",
+      "7-4",
+      "7-5",
+      "7-6"
+    ]
+  },
+  {
+    "bookingID": "1566511295024140",
+    "bookerName": "PETER NOEL BOHNER -",
+    "totalParticipants": 8,
+    "adults": 4,
+    "childrenOrNannies": 4,
+    "Neto total": "2,100.00",
+    "ITBIS": "378.00",
+    "SERVICE CHARGE": "210.00",
+    "Bruto total": "2,688.00",
+    "Total pagado": "2,688.00",
+    "seats": [
+      "51-3",
+      "51-10",
+      "51-5",
+      "51-4",
+      "51-7",
+      "51-6",
+      "51-9",
+      "51-8"
+    ]
+  },
+  {
+    "bookingID": "1566511308930646",
+    "bookerName": "Vimyr Mangual",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "45-2",
+      "45-3",
+      "45-4",
+      "45-5",
+      "45-6",
+      "45-7",
+      "45-8",
+      "45-9",
+      "45-10"
+    ]
+  },
+  {
+    "bookingID": "1566511302632077",
+    "bookerName": "ALBA DAMIRON VAN DER DIJS -",
+    "totalParticipants": 2,
+    "adults": 2,
+    "childrenOrNannies": 0,
+    "Neto total": "750.00",
+    "ITBIS": "135.00",
+    "SERVICE CHARGE": "75.00",
+    "Bruto total": "960.00",
+    "Total pagado": "960.00",
+    "seats": [
+      "50-4",
+      "50-3"
+    ]
+  },
+  {
+    "bookingID": "1566512015950789",
+    "bookerName": "ANA MARIA LOCASCIO -",
+    "totalParticipants": 14,
+    "adults": 8,
+    "childrenOrNannies": 6,
+    "Neto total": "3,900.00",
+    "ITBIS": "702.00",
+    "SERVICE CHARGE": "390.00",
+    "Bruto total": "4,992.00",
+    "Total pagado": "5,472.00",
+    "seats": [
+      "20-12",
+      "20-2",
+      "20-11",
+      "20-10",
+      "20-1",
+      "20-6",
+      "20-5",
+      "20-4",
+      "20-3",
+      "20-9",
+      "20-8",
+      "20-7",
+      "24-2",
+      "24-3",
+      "24-1"
+    ]
+  },
+  {
+    "bookingID": "1566512025901820",
+    "bookerName": "MICHEL BAIK VALES -",
+    "totalParticipants": 11,
+    "adults": 11,
+    "childrenOrNannies": 0,
+    "Neto total": "4,125.00",
+    "ITBIS": "742.50",
+    "SERVICE CHARGE": "412.50",
+    "Bruto total": "5,280.00",
+    "Total pagado": "5,280.00",
+    "seats": [
+      "12-8",
+      "12-9",
+      "12-10",
+      "12-2",
+      "12-3",
+      "12-11",
+      "12-12",
+      "12-6",
+      "12-7",
+      "12-4",
+      "12-5"
+    ]
+  },
+  {
+    "bookingID": "1566512024248915",
+    "bookerName": "ANA MARIA LOCASCIO -",
+    "totalParticipants": 1,
+    "adults": 1,
+    "childrenOrNannies": 0,
+    "Neto total": "375.00",
+    "ITBIS": "67.50",
+    "SERVICE CHARGE": "37.50",
+    "Bruto total": "480.00",
+    "Total pagado": "192.00",
+    "seats": [
+      "24-4"
+    ]
+  },
+  {
+    "bookingID": "1566512038035650",
+    "bookerName": "Pedro Montilla",
+    "totalParticipants": 5,
+    "adults": 3,
+    "childrenOrNannies": 2,
+    "Neto total": "1,425.00",
+    "ITBIS": "256.50",
+    "SERVICE CHARGE": "142.50",
+    "Bruto total": "1,824.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "14-6",
+      "14-7",
+      "14-8",
+      "14-9",
+      "14-10"
+    ]
+  },
+  {
+    "bookingID": "1566512033874152",
+    "bookerName": "Carlos Gonzales",
+    "totalParticipants": 5,
+    "adults": 2,
+    "childrenOrNannies": 3,
+    "Neto total": "1,200.00",
+    "ITBIS": "216.00",
+    "SERVICE CHARGE": "120.00",
+    "Bruto total": "1,536.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "14-1",
+      "14-2",
+      "14-3",
+      "14-4",
+      "14-5"
+    ]
+  },
+  {
+    "bookingID": "1566512034937267",
+    "bookerName": "Brenda Morales",
+    "totalParticipants": 2,
+    "adults": 2,
+    "childrenOrNannies": 0,
+    "Neto total": "750.00",
+    "ITBIS": "135.00",
+    "SERVICE CHARGE": "75.00",
+    "Bruto total": "960.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "23-5",
+      "23-6"
+    ]
+  },
+  {
+    "bookingID": "1566512032331878",
+    "bookerName": "Lee Ballester",
+    "totalParticipants": 7,
+    "adults": 7,
+    "childrenOrNannies": 0,
+    "Neto total": "2,625.00",
+    "ITBIS": "472.50",
+    "SERVICE CHARGE": "262.50",
+    "Bruto total": "3,360.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "60-1",
+      "60-2",
+      "60-3",
+      "60-4",
+      "60-5",
+      "60-6",
+      "60-7",
+      "60-8"
+    ]
+  },
+  {
+    "bookingID": "1566512039496959",
+    "bookerName": "Olivo Rodriguez",
+    "totalParticipants": 6,
+    "adults": 6,
+    "childrenOrNannies": 0,
+    "Neto total": "2,250.00",
+    "ITBIS": "405.00",
+    "SERVICE CHARGE": "225.00",
+    "Bruto total": "2,880.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "64-1",
+      "64-2",
+      "64-3",
+      "64-4",
+      "64-5",
+      "64-6",
+      "64-7",
+      "64-8"
+    ]
+  },
+  {
+    "bookingID": "1566512032196575",
+    "bookerName": "Familia Rainieri",
+    "totalParticipants": 48,
+    "adults": 48,
+    "childrenOrNannies": 0,
+    "Neto total": "18,000.00",
+    "ITBIS": "3,240.00",
+    "SERVICE CHARGE": "1,800.00",
+    "Bruto total": "23,040.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "41-1",
+      "41-2",
+      "41-3",
+      "41-4",
+      "41-5",
+      "41-6",
+      "41-7",
+      "41-8",
+      "41-9",
+      "41-10",
+      "41-11",
+      "41-12",
+      "42-1",
+      "42-2",
+      "42-3",
+      "42-4",
+      "42-5",
+      "42-6",
+      "42-7",
+      "42-8",
+      "42-9",
+      "42-10",
+      "42-11",
+      "42-12",
+      "43-1",
+      "43-2",
+      "43-3",
+      "43-4",
+      "43-5",
+      "43-6",
+      "43-7",
+      "43-8",
+      "43-9",
+      "43-10",
+      "43-11",
+      "43-12",
+      "44-1",
+      "44-2",
+      "44-3",
+      "44-4",
+      "44-5",
+      "44-6",
+      "44-7",
+      "44-8",
+      "44-9",
+      "44-10",
+      "44-11",
+      "44-12"
+    ]
+  },
+  {
+    "bookingID": "1566512035397880",
+    "bookerName": "Familia Sotelo",
+    "totalParticipants": 8,
+    "adults": 8,
+    "childrenOrNannies": 0,
+    "Neto total": "3,000.00",
+    "ITBIS": "540.00",
+    "SERVICE CHARGE": "300.00",
+    "Bruto total": "3,840.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "63-1",
+      "63-2",
+      "63-3",
+      "63-4",
+      "63-5",
+      "63-6",
+      "63-7",
+      "63-8"
+    ]
+  },
+  {
+    "bookingID": "1566512035189681",
+    "bookerName": "Carmen Rosa",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "0.00",
+    "seats": []
+  },
+  {
+    "bookingID": "1566512038296760",
+    "bookerName": "Luis Migoya",
+    "totalParticipants": 20,
+    "adults": 20,
+    "childrenOrNannies": 0,
+    "Neto total": "7,500.00",
+    "ITBIS": "1,350.00",
+    "SERVICE CHARGE": "750.00",
+    "Bruto total": "9,600.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "39-1",
+      "39-2",
+      "39-3",
+      "39-4",
+      "39-5",
+      "39-6",
+      "39-7",
+      "39-8",
+      "39-9",
+      "39-10",
+      "33-1",
+      "33-2",
+      "33-3",
+      "33-4",
+      "33-5",
+      "33-6",
+      "33-7",
+      "33-8",
+      "33-9",
+      "33-10"
+    ]
+  },
+  {
+    "bookingID": "1566512037552962",
+    "bookerName": "JOSE ANT. BERNAL FRANCO -",
+    "totalParticipants": 9,
+    "adults": 9,
+    "childrenOrNannies": 0,
+    "Neto total": "3,375.00",
+    "ITBIS": "607.50",
+    "SERVICE CHARGE": "337.50",
+    "Bruto total": "4,320.00",
+    "Total pagado": "4,320.00",
+    "seats": [
+      "35-6",
+      "35-7",
+      "35-8",
+      "35-9",
+      "35-10",
+      "35-5",
+      "35-4",
+      "35-3",
+      "35-2"
+    ]
+  },
+  {
+    "bookingID": "1566512035079632",
+    "bookerName": "Fraysis Moronta",
+    "totalParticipants": 9,
+    "adults": 4,
+    "childrenOrNannies": 5,
+    "Neto total": "2,250.00",
+    "ITBIS": "405.00",
+    "SERVICE CHARGE": "225.00",
+    "Bruto total": "2,880.00",
+    "Total pagado": "3,360.00",
+    "seats": [
+      "70-1",
+      "70-2",
+      "70-3",
+      "70-4",
+      "70-5",
+      "70-6",
+      "70-7",
+      "70-8",
+      "70-9",
+      "70-10"
+    ]
+  },
+  {
+    "bookingID": "1566512038756365",
+    "bookerName": "Yaimi Mojena",
+    "totalParticipants": 4,
+    "adults": 4,
+    "childrenOrNannies": 0,
+    "Neto total": "1,500.00",
+    "ITBIS": "270.00",
+    "SERVICE CHARGE": "150.00",
+    "Bruto total": "1,920.00",
+    "Total pagado": "1,920.00",
+    "seats": [
+      "58-1",
+      "58-2",
+      "58-3",
+      "58-4"
+    ]
+  },
+  {
+    "bookingID": "1566512036742434",
+    "bookerName": "John Benjamin",
+    "totalParticipants": 5,
+    "adults": 5,
+    "childrenOrNannies": 0,
+    "Neto total": "1,875.00",
+    "ITBIS": "337.50",
+    "SERVICE CHARGE": "187.50",
+    "Bruto total": "2,400.00",
+    "Total pagado": "2,400.00",
+    "seats": [
+      "59-1",
+      "59-2",
+      "59-3",
+      "59-4",
+      "59-5"
+    ]
+  },
+  {
+    "bookingID": "1566512032762428",
+    "bookerName": "Carlos Espinal",
+    "totalParticipants": 8,
+    "adults": 7,
+    "childrenOrNannies": 1,
+    "Neto total": "2,775.00",
+    "ITBIS": "499.50",
+    "SERVICE CHARGE": "277.50",
+    "Bruto total": "3,552.00",
+    "Total pagado": "3,552.00",
+    "seats": [
+      "46-1",
+      "46-2",
+      "46-3",
+      "46-4",
+      "46-5",
+      "46-6",
+      "46-7",
+      "46-8"
+    ]
+  },
+  {
+    "bookingID": "1566512035707186",
+    "bookerName": "Sam Heer",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "19-1",
+      "19-2",
+      "19-3",
+      "19-4",
+      "19-5",
+      "19-6",
+      "19-7",
+      "19-8",
+      "19-9",
+      "19-10",
+      "19-11",
+      "19-12"
+    ]
+  },
+  {
+    "bookingID": "1566512044840892",
+    "bookerName": "Carolina Otero",
+    "totalParticipants": 8,
+    "adults": 4,
+    "childrenOrNannies": 4,
+    "Neto total": "2,100.00",
+    "ITBIS": "378.00",
+    "SERVICE CHARGE": "210.00",
+    "Bruto total": "2,688.00",
+    "Total pagado": "2,688.00",
+    "seats": [
+      "9-1",
+      "9-2",
+      "9-3",
+      "9-4",
+      "9-5",
+      "9-6",
+      "9-7",
+      "9-8"
+    ]
+  },
+  {
+    "bookingID": "1566512043412089",
+    "bookerName": "YURY PETROV -",
+    "totalParticipants": 4,
+    "adults": 3,
+    "childrenOrNannies": 1,
+    "Neto total": "1,275.00",
+    "ITBIS": "229.50",
+    "SERVICE CHARGE": "127.50",
+    "Bruto total": "1,632.00",
+    "Total pagado": "1,632.00",
+    "seats": [
+      "1-4",
+      "1-1",
+      "1-3",
+      "1-2"
+    ]
+  },
+  {
+    "bookingID": "1566512044678657",
+    "bookerName": "Julie Bliemel",
+    "totalParticipants": 4,
+    "adults": 4,
+    "childrenOrNannies": 0,
+    "Neto total": "1,500.00",
+    "ITBIS": "270.00",
+    "SERVICE CHARGE": "150.00",
+    "Bruto total": "1,920.00",
+    "Total pagado": "1,920.00",
+    "seats": [
+      "36-1",
+      "36-2",
+      "36-3",
+      "36-4"
+    ]
+  },
+  {
+    "bookingID": "1566512057601020",
+    "bookerName": "Evagrio Sanchez",
+    "totalParticipants": 12,
+    "adults": 8,
+    "childrenOrNannies": 4,
+    "Neto total": "3,600.00",
+    "ITBIS": "648.00",
+    "SERVICE CHARGE": "360.00",
+    "Bruto total": "4,608.00",
+    "Total pagado": "4,608.00",
+    "seats": [
+      "4-1",
+      "4-2",
+      "4-3",
+      "4-4",
+      "4-5",
+      "4-6",
+      "4-7",
+      "4-8",
+      "4-9",
+      "4-10",
+      "4-11",
+      "4-12"
+    ]
+  },
+  {
+    "bookingID": "1566512059921271",
+    "bookerName": "Veronica Ega De Ortiz",
+    "totalParticipants": 4,
+    "adults": 3,
+    "childrenOrNannies": 1,
+    "Neto total": "1,275.00",
+    "ITBIS": "229.50",
+    "SERVICE CHARGE": "127.50",
+    "Bruto total": "1,632.00",
+    "Total pagado": "1,632.00",
+    "seats": [
+      "9-11",
+      "9-12",
+      "9-9",
+      "9-10"
+    ]
+  },
+  {
+    "bookingID": "1566512058468729",
+    "bookerName": "Joan Kirwin",
+    "totalParticipants": 5,
+    "adults": 5,
+    "childrenOrNannies": 0,
+    "Neto total": "1,875.00",
+    "ITBIS": "337.50",
+    "SERVICE CHARGE": "187.50",
+    "Bruto total": "2,400.00",
+    "Total pagado": "2,400.00",
+    "seats": [
+      "61-4",
+      "61-5",
+      "61-6",
+      "61-7",
+      "61-8"
+    ]
+  },
+  {
+    "bookingID": "1566512058850048",
+    "bookerName": "Enrique Peña",
+    "totalParticipants": 30,
+    "adults": 30,
+    "childrenOrNannies": 0,
+    "Neto total": "11,250.00",
+    "ITBIS": "2,025.00",
+    "SERVICE CHARGE": "1,125.00",
+    "Bruto total": "14,400.00",
+    "Total pagado": "0.00",
+    "seats": [
+      "27-1",
+      "27-2",
+      "27-3",
+      "27-4",
+      "27-5",
+      "27-6",
+      "27-7",
+      "27-8",
+      "27-9",
+      "27-10",
+      "29-1",
+      "29-2",
+      "29-3",
+      "29-4",
+      "29-5",
+      "29-6",
+      "29-7",
+      "29-8",
+      "29-9",
+      "29-10",
+      "30-1",
+      "30-2",
+      "30-3",
+      "30-4",
+      "30-5",
+      "30-6",
+      "30-7",
+      "30-8",
+      "30-9",
+      "30-10"
+    ]
+  },
+  {
+    "bookingID": "1566512074099464",
+    "bookerName": "Amy Kapiloff",
+    "totalParticipants": 6,
+    "adults": 6,
+    "childrenOrNannies": 0,
+    "Neto total": "2,250.00",
+    "ITBIS": "405.00",
+    "SERVICE CHARGE": "225.00",
+    "Bruto total": "2,880.00",
+    "Total pagado": "2,880.00",
+    "seats": [
+      "58-5",
+      "58-6",
+      "58-7",
+      "58-8",
+      "58-9",
+      "58-10"
+    ]
+  },
+  {
+    "bookingID": "1566512082231774",
+    "bookerName": "Hector Batista",
+    "totalParticipants": 4,
+    "adults": 4,
+    "childrenOrNannies": 0,
+    "Neto total": "1,500.00",
+    "ITBIS": "270.00",
+    "SERVICE CHARGE": "150.00",
+    "Bruto total": "1,920.00",
+    "Total pagado": "1,920.00",
+    "seats": [
+      "62-1",
+      "62-2",
+      "62-3",
+      "62-4"
+    ]
+  },
+  {
+    "bookingID": "1566512081120121",
+    "bookerName": "LORENZO CAIMARI -",
+    "totalParticipants": 10,
+    "adults": 10,
+    "childrenOrNannies": 0,
+    "Neto total": "3,750.00",
+    "ITBIS": "675.00",
+    "SERVICE CHARGE": "375.00",
+    "Bruto total": "4,800.00",
+    "Total pagado": "4,800.00",
+    "seats": [
+      "28-1",
+      "28-2",
+      "28-3",
+      "28-4",
+      "28-5",
+      "28-10",
+      "28-9",
+      "28-8",
+      "28-7",
+      "28-6"
+    ]
+  },
+  {
+    "bookingID": "1566512085215938",
+    "bookerName": "ANA MARIA LOCASCIO -",
+    "totalParticipants": 1,
+    "adults": 1,
+    "childrenOrNannies": 0,
+    "Neto total": "375.00",
+    "ITBIS": "67.50",
+    "SERVICE CHARGE": "37.50",
+    "Bruto total": "480.00",
+    "Total pagado": "480.00",
+    "seats": [
+      "24-8"
+    ]
+  },
+  {
+    "bookingID": "1566512089262198",
+    "bookerName": "Natacha Dassault",
+    "totalParticipants": 12,
+    "adults": 12,
+    "childrenOrNannies": 0,
+    "Neto total": "4,500.00",
+    "ITBIS": "810.00",
+    "SERVICE CHARGE": "450.00",
+    "Bruto total": "5,760.00",
+    "Total pagado": "5,760.00",
+    "seats": [
+      "11-1",
+      "11-2",
+      "11-3",
+      "11-4",
+      "11-5",
+      "11-6",
+      "11-7",
+      "11-8",
+      "11-9",
+      "11-10",
+      "11-11",
+      "11-12"
+    ]
+  }
+];
+        
+        // Variables para almacenar los datos procesados (variables globales)
+        let seatReservationMap = {}; 
+        let bookedSeatsList = [];    
+        let duplicateBookingsMap = {}; 
+        
+        // =========================================================
+        //  FUNCIÓN PRINCIPAL DE PROCESAMIENTO
+        // =========================================================
+        function processReservationData(reservations) { 
+            // Limpiar datos anteriores
+            seatReservationMap = {};
+            bookedSeatsList = [];
+            duplicateBookingsMap = {};
+            const seatTracker = {}; // Asiento -> BookingID
 
-        // Cargar el chart al iniciar la página
+            reservations.forEach(reservation => {
+                reservation.seats.forEach(seatId => {
+                    // 1. Detección de duplicados
+                    if (seatTracker[seatId]) {
+                        // Conflicto: El asiento ya está tomado por otra reserva
+                        
+                        const firstBookingID = seatTracker[seatId];
+                        const secondBookingID = reservation.bookingID;
+
+                        // Se busca el objeto de reserva completo usando la lista global RESERVATION_DATA
+                        const firstReservationObject = RESERVATION_DATA.find(r => r.bookingID === firstBookingID);
+                        
+                        // Inicializar o actualizar el primer booking duplicado
+                        duplicateBookingsMap[firstBookingID] = duplicateBookingsMap[firstBookingID] || firstReservationObject;
+                        duplicateBookingsMap[firstBookingID].conflictedSeats = duplicateBookingsMap[firstBookingID].conflictedSeats || [];
+                        if (!duplicateBookingsMap[firstBookingID].conflictedSeats.includes(seatId)) {
+                             duplicateBookingsMap[firstBookingID].conflictedSeats.push(seatId);
+                        }
+                        
+                        // Inicializar o actualizar el segundo booking duplicado
+                        duplicateBookingsMap[secondBookingID] = duplicateBookingsMap[secondBookingID] || reservation;
+                        duplicateBookingsMap[secondBookingID].conflictedSeats = duplicateBookingsMap[secondBookingID].conflictedSeats || [];
+                        if (!duplicateBookingsMap[secondBookingID].conflictedSeats.includes(seatId)) {
+                             duplicateBookingsMap[secondBookingID].conflictedSeats.push(seatId);
+                        }
+                        
+                        console.warn(`⚠️ Asiento duplicado detectado: ${seatId}. Reservas afectadas: ${firstBookingID} y ${secondBookingID}`);
+                    }
+                    
+                    // 2. Mapeo para seats.io
+                    seatTracker[seatId] = reservation.bookingID; 
+                    seatReservationMap[seatId] = reservation;
+                    bookedSeatsList.push(seatId);
+                });
+            });
+            
+            // 3. Renderizar las dos tablas
+            renderValidationTable(); // ⬅️ LLAMADA A LA NUEVA FUNCIÓN
+            renderDuplicateTable();
+        }
+        
+        // =========================================================
+        // 🆕 RENDERIZADO DE LA TABLA DETALLADA DE RESERVAS
+        // =========================================================
+        function renderValidationTable() {
+            const tableBody = document.querySelector('#validation-table tbody');
+            tableBody.innerHTML = '';
+            
+            // Asegúrate de usar 'RESERVATION_DATA' que tiene la información completa
+            RESERVATION_DATA.forEach(reservation => {
+                const row = tableBody.insertRow();
+                
+                // Columna 1: ID de Reserva
+                row.insertCell().textContent = reservation.bookingID;
+                
+                // Columna 2: Booker Name
+                row.insertCell().textContent = reservation.bookerName;
+
+                // Columna 3: Mesa / Asientos (Mostramos solo la parte de la mesa del primer asiento)
+                // Usamos un operador ternario para evitar errores si 'seats' está vacío.
+                const mesa = reservation.seats.length > 0 ? reservation.seats[0].split('-')[0] : 'N/A';
+                row.insertCell().textContent = mesa;
+                
+                // Columna 4: Total Personas
+                // Usamos 'totalParticipants' (nuevo) o 'participants' (viejo) como fallback
+                row.insertCell().textContent = reservation.totalParticipants || reservation.participants || '0';
+                
+                // Columna 5: Adultos (Usamos 'adults' o '0' como fallback)
+                row.insertCell().textContent = reservation.adults || '0';
+                
+                // Columna 6: Niños/Nanies (Usamos 'childrenOrNannies' o '0' como fallback)
+                row.insertCell().textContent = reservation.childrenOrNannies || '0';
+
+                // Columna 7: Asientos Asignados
+                row.insertCell().textContent = reservation.seats.join(', ');
+            });
+
+             // Mostrar la sección de la tabla de reservas
+             document.getElementById('reservation-report-section').style.display = 'block';
+        }
+
+
+        // =========================================================
+        //  RENDERIZADO DEL CHART
+        // =========================================================
         window.addEventListener('DOMContentLoaded', function() {
-            // Esperar a que seatsio esté disponible
+            
+            // 🔑 LÍNEA CLAVE CORREGIDA: Usamos la variable global RESERVATION_DATA
+            processReservationData(RESERVATION_DATA);
+            
             if (typeof seatsio !== 'undefined') {
                 loadChart();
             } else {
-                // Intentar cargar después de un pequeño delay
                 setTimeout(function() {
                     if (typeof seatsio !== 'undefined') {
                         loadChart();
                     } else {
-                        showStatus('❌ Error: No se pudo cargar la librería de Seats.io. Verifica tu conexión a internet.', 'error');
+                        showStatus('❌ Error: No se pudo cargar la librería de Seats.io.', 'error');
                     }
                 }, 1000);
             }
         });
 
         function loadChart() {
-            currentConfig.workspaceKey = 'e153e5da-e4c3-48b0-957e-136b01effc63';
-            currentConfig.eventKey = '0be99477-6f28-4ba1-bc68-bc61c8ae2284';
-
             // Limpiar el chart anterior si existe
             if (chart) {
                 chart.destroy();
             }
 
             try {
-                // Crear el chart de Seats.io en modo solo consulta
                 chart = new seatsio.SeatingChart({
                     divId: 'chart',
-                    workspaceKey: currentConfig.workspaceKey,
-                    event: currentConfig.eventKey,
+                    workspaceKey: SEATS_IO_CONFIG.workspaceKey,
+                    event: SEATS_IO_CONFIG.eventKey,
                     
                     // Configuraciones para modo solo consulta
-                    mode: 'static', // Modo estático - solo visualización
-                    showSeatLabels: true, // Mostrar etiquetas de asientos
-                    showRowLabels: true, // Mostrar etiquetas de filas
-                    showMinimap: true, // Mostrar minimapa
-                    showActiveSectionTooltip: true,
-                    
-                    // Deshabilitar selección
-
+                    mode: 'static', 
                     maxSelectedObjects: 0, // No permitir seleccionar asientos
                     
-                    // Personalización de colores
-                    colorScheme: 'dark',
+                    bookedObjects: bookedSeatsList,
                     
-                    // Información de precios (opcional)
-                    pricing: [
-                        {'category': 1, 'price': 30},
-                        {'category': 2, 'price': 40},
-                        {'category': 3, 'price': 50}
-                    ],
-                    
-                    priceFormatter: function(price) {
-                        return '$' + price;
+                    // Tooltip personalizado para mostrar la info del booker y el desglose de PAX
+                    tooltipInfo: function(object) {
+                        const reservation = seatReservationMap[object.label];
+                        
+                        if (reservation) {
+                            
+                            // Obtención de los nuevos campos, usando fallbacks
+                            const totalPax = reservation.totalParticipants || reservation.participants || 'N/A';
+                            const adults = reservation.adults || '0';
+                            const children = reservation.childrenOrNannies || '0';
+
+                            let html = `
+                                <h4>✅ RESERVADO: ${object.label}</h4>
+                                <p><strong>ID de Reserva:</strong> ${reservation.bookingID}</p>
+                                <p><strong>Booker:</strong> ${reservation.bookerName}</p>
+                                <hr style="border: 0; border-top: 1px solid #eee; margin: 5px 0;">
+                                <p><strong>Total PAX:</strong> ${totalPax}</p>
+                                <p><strong>Adultos:</strong> ${adults}</p>
+                                <p><strong>Niños/Nanies:</strong> ${children}</p>
+                            `;
+                            
+                            // Verificar si esta reserva tiene duplicados
+                            if (duplicateBookingsMap[reservation.bookingID]) {
+                                html += `<p class="duplicate-alert">🚨 ¡ERROR! Asiento(s) en conflicto: ${duplicateBookingsMap[reservation.bookingID].conflictedSeats.join(', ')}</p>`;
+                            }
+                            
+                            return html;
+
+                        } else if (object.status === 'free') {
+                            return '✔️ DISPONIBLE (Solo Vista)';
+                        }
+                        return null; 
                     },
-                    
-                    // Callbacks para información
+
+                    // Callbacks
                     onChartRendered: function(chart) {
                         console.log('Chart renderizado correctamente');
-                        showStatus('✅ Chart cargado exitosamente. Mostrando disponibilidad en tiempo real.', 'success');
+                        showStatus('✅ Chart cargado exitosamente. Se cargaron ' + bookedSeatsList.length + ' asientos ocupados.', 'success');
                     },
                     
                     onChartRenderingFailed: function(chart) {
                         console.error('Error al renderizar el chart');
-                        showStatus('❌ Error al cargar el chart. Verifica tus credenciales y que el evento exista.', 'error');
-                    },
-                    
-                    onObjectClicked: function(object) {
-                        // Mostrar información del asiento al hacer clic
-                        let statusText = '';
-                        if (object.status === 'free') {
-                            statusText = 'Disponible';
-                        } else if (object.status === 'booked') {
-                            statusText = 'Ocupado';
-                        } else if (object.status === 'reservedByToken') {
-                            statusText = 'Reservado temporalmente';
-                        } else {
-                            statusText = object.status;
-                        }
-                        
-                        const info = `
-                            Asiento: ${object.label}
-                            Estado: ${statusText}
-                            Categoría: ${object.category ? object.category.label : 'N/A'}
-                            ${object.pricing ? 'Precio: ' + object.pricing.formattedPrice : ''}
-                        `;
-                        
-                        alert(info);
+                        showStatus('❌ Error al cargar el chart. Verifica tus credenciales.', 'error');
                     }
                     
                 }).render();
 
             } catch (error) {
                 console.error('Error al crear el chart:', error);
-                showStatus('❌ Error: ' + error.message, 'error');
+                showStatus('❌ Error al crear el chart: ' + error.message, 'error');
             }
         }
+        
+        // =========================================================
+        //  RENDERIZADO DE LA TABLA DE DUPLICADOS
+        // =========================================================
+        function renderDuplicateTable() {
+            const tableBody = document.querySelector('#duplicate-table tbody');
+            const reportSection = document.getElementById('duplicate-report-section');
+            tableBody.innerHTML = '';
+            
+            const duplicates = Object.values(duplicateBookingsMap);
 
-        function refreshChart() {
-            if (chart) {
-                chart.rerender();
-                showStatus('🔄 Chart actualizado', 'success');
+            if (duplicates.length > 0) {
+                duplicates.forEach(reservation => {
+                    const row = tableBody.insertRow();
+                    row.insertCell().textContent = reservation.bookingID;
+                    row.insertCell().textContent = reservation.bookerName;
+                    
+                    const conflictedSeatsCell = row.insertCell();
+                    conflictedSeatsCell.className = 'duplicate-seat';
+                    // Usamos el array 'conflictedSeats' que generamos en el procesamiento
+                    conflictedSeatsCell.textContent = reservation.conflictedSeats.join(', '); 
+                });
+                reportSection.style.display = 'block';
             } else {
-                showStatus('⚠️ Primero debes cargar un chart', 'error');
+                reportSection.style.display = 'none';
             }
         }
-
+        
+        // Funciones auxiliares
         function showStatus(message, type = 'success') {
             const panel = document.getElementById('statusPanel');
             panel.className = 'status-panel ' + (type === 'error' ? 'error' : '');
@@ -432,7 +1712,6 @@
                 <p>${message}</p>
             `;
 
-            // Auto-ocultar después de 5 segundos si es éxito
             if (type === 'success') {
                 setTimeout(() => {
                     panel.style.display = 'none';
